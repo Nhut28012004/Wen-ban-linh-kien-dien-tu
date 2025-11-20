@@ -1,0 +1,73 @@
+﻿@model IEnumerable<ContactModel>
+@{
+    ViewData["title"] = "Contact Info";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Contact</title>
+</head>
+<body>
+    <h3>List Contact</h3>
+    <div class="table table-responsive">
+        <table class="table table-responsive" id="myTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Map</th>
+                <th>Email</th>
+                <th>Logo</th>
+                <th>Phone</th>
+               
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    
+                    <td>@item.Name</td>
+                    <td>@Html.Raw(@item.Description)</td>
+                    <td>
+                        @{
+                            var map = item.Map ?? "";
+                            if (map.ToLower().Contains("<iframe"))
+                            {
+                                @Html.Raw(map)
+                            }
+                            else if (!string.IsNullOrWhiteSpace(map))
+                            {
+                                var encoded = System.Net.WebUtility.UrlEncode(map);
+                        <text>
+                                <iframe src="https://www.google.com/maps?q=@encoded&output=embed" width="300" height="200" style="border:0;" loading="lazy"></iframe>
+                                <br />
+                                <a href="@(map.StartsWith("http", System.StringComparison.OrdinalIgnoreCase) ? map : "https://www.google.com/maps/search/?api=1&query=" + encoded)" target="_blank" rel="noopener">Open map</a>
+                        </text>
+                            }
+                            else
+                            {
+                                <text>-</text>
+                            }
+                        }
+                    </td>
+                    <td>@item.Email</td>
+                    <td> <img src="~/media/logo/@item.LogoImg" width="120px" height="150px" /> </td>
+                    <td> @item.Phone </td>
+                 
+                    <td>
+                        <a class="btn btn-warning btn-sm" asp-action="Edit" asp-controller="Contact">Edit</a>
+                      
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+</body>
+
+</html>
