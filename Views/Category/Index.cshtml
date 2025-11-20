@@ -1,0 +1,130 @@
+﻿@model IEnumerable<ProductModel>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-sm-3">
+    <partial name="_SidebarPartial" />
+</div>
+
+<div class="col-sm-9 padding-right">
+
+    @* Render filter/sort in its own row above the products so it appears in the blank area *@
+    @if (ViewBag.count > 0)
+    {
+        <div class="row mb-3">
+            <div class="col-12">
+                <partial name="_FilterProductsPartial" />
+            </div>
+        </div>
+    }
+
+    <div class="features_items">
+        <!--features_items-->
+        <h2 class="title text-center">@ViewBag.Slug</h2>
+
+        @foreach (var item in Model)
+        {
+
+            <div class="col-sm-4">
+                <div class="product-image-wrapper">
+
+                    <a>
+                        <div class="single-products">
+                            <div class="productinfo text-center">
+                                <img src="~/media/products/@item.Image" alt="@item.Name" width="100px" height="200px" />
+                                <h2>@item.Price.ToString("#,##0 VNĐ")</h2>
+                                <p>@item.Name</p>
+                                <p>Danh mục: @item.Category.Name</p>
+                                <p>Thương hiệu: @item.Brand.Name</p>
+
+                                <a asp-action="Add" asp-controller="Cart" asp-route-Id="@item.Id" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                            </div>
+                        </div>
+                    </a>
+
+                    <div class="choose">
+                        <ul class="nav nav-pills nav-justified">
+                            <li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
+                            <li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+    </div><!--features_items-->
+
+</div>
+@if (ViewBag.count > 0)
+{
+    @section Scripts {
+        <script>
+            $(function () {
+                // ensure numbers are available
+                var min = @ViewBag.minprice;
+                var max = @ViewBag.maxprice;
+
+                $("#slider-range").slider({
+                    range: true,
+                    min: min,
+                    max: max,
+                    step: 100000,
+                    values: [min, max],
+                    slide: function (event, ui) {
+                        $("#amount").val("đ" + ui.values[0] + " - đ" + ui.values[1]);
+                    }
+                });
+
+                $("#amount").val("đ" + $("#slider-range").slider("values", 0) +
+                    " - đ" + $("#slider-range").slider("values", 1));
+
+                // build URL preserving existing query params (sort/filter)
+                function updateQueryAndNavigate(paramsObj) {
+                    var params = new URLSearchParams(window.location.search);
+                    for (var k in paramsObj) {
+                        if (paramsObj[k] === null) {
+                            params.delete(k);
+                        } else {
+                            params.set(k, paramsObj[k]);
+                        }
+                    }
+                    var qs = params.toString();
+                    window.location = window.location.pathname + (qs ? "?" + qs : "");
+                }
+
+                // btn lọc giá (use JS to preserve sort_by)
+                $('.btn-locgia').on('click', function (e) {
+                    e.preventDefault();
+                    updateQueryAndNavigate({
+                        startprice: $("#slider-range").slider("values", 0),
+                        endprice: $("#slider-range").slider("values", 1)
+                    });
+                    return false;
+                });
+
+                // sort control: value is sort key, JS adds it to current URL preserving other params
+                $('#sort_by').on('change', function () {
+                    var sortKey = $(this).val();
+                    if (sortKey) {
+                        updateQueryAndNavigate({ sort_by: sortKey });
+                    } else {
+                        updateQueryAndNavigate({ sort_by: null });
+                    }
+                    return false;
+                });
+
+                // optional: pre-select current sort in the select
+                var currentSort = new URLSearchParams(window.location.search).get('sort_by');
+                if (currentSort) {
+                    $('#sort_by').val(currentSort);
+                }
+            });
+        </script>
+    }
+}
+
+@* temporarily show count for debugging *@
+<div style="display:none" id="debug-info">count=@ViewBag.count; query=@Context.Request.QueryString</div>
+
+

@@ -1,0 +1,25 @@
+﻿@using Azure.Core
+@{
+    var request = Url.ActionContext.HttpContext.Request;
+    var slug = Url.ActionContext.RouteData.Values["slug"]?.ToString();
+    var currentSort = request.Query["sort_by"].ToString() ?? "";
+}
+<div class="row align-items-center">
+    <div class="col-md-6">
+        <!-- left: you can place breadcrumb / result count here if needed -->
+    </div>
+
+    <div class="col-md-6 text-right">
+        <label class="sr-only" for="sort_by">Sắp xếp theo</label>
+        <div class="d-inline-block">
+            <h5 class="mb-1" style="display:inline-block; margin-right:8px;">Sắp xếp theo</h5>
+            <select class="form-control d-inline-block" id="sort_by" style="min-width:220px;">
+                <option value="">---------</option>
+                <option value="price_increase" selected="@(currentSort == "price_increase" ? "selected" : null)">Giá tăng dần</option>
+                <option value="price_decrease" selected="@(currentSort == "price_decrease" ? "selected" : null)">Giá giảm dần</option>
+                <option value="price_newest" selected="@(currentSort == "price_newest" ? "selected" : null)">Mới nhất</option>
+                <option value="price_oldest" selected="@(currentSort == "price_oldest" ? "selected" : null)">Cũ nhất</option>
+            </select>
+        </div>
+    </div>
+</div>

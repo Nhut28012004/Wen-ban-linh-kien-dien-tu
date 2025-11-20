@@ -1,0 +1,54 @@
+﻿@model ContactModel
+@using System.Text.RegularExpressions
+
+<div class="row">
+	
+	<div class="col-sm-3">
+		<div class="companyinfo">
+			<p><img src="~/media/logo/@Model.LogoImg" width="200px" height="120px" /></p>
+			<p>@Html.Raw(@Model.Description)</p>
+		</div>
+	</div>
+	<div class="col-sm-5 col-md-5">
+		@{
+			var map = Model.Map ?? "";
+			if (map.ToLower().Contains("<iframe"))
+			{
+				@Html.Raw(map)
+			}
+			else if (!string.IsNullOrWhiteSpace(map))
+			{
+				var m = Regex.Match(map, @"@(-?\d+\.\d+),(-?\d+\.\d+)");
+				if (m.Success)
+				{
+					var lat = m.Groups[1].Value;
+					var lng = m.Groups[2].Value;
+					var src = $"https://www.google.com/maps?q={lat},{lng}&z=15&output=embed";
+					<iframe src="@src" width="100%" height="250" style="border:0;" loading="lazy"></iframe>
+				}
+				else
+				{
+					var encoded = System.Net.WebUtility.UrlEncode(map);
+					var src = $"https://www.google.com/maps?q={encoded}&output=embed";
+					<iframe src="@src" width="100%" height="250" style="border:0;" loading="lazy"></iframe>
+					<p style="margin-top:6px">
+						<a href="@(map.StartsWith("http", System.StringComparison.OrdinalIgnoreCase) ? map : "https://www.google.com/maps/search/?api=1&query=" + encoded)" target="_blank" rel="noopener">Open in Google Maps</a>
+					</p>
+				}
+			}
+			else
+			{
+				<text>-</text>
+			}
+		}
+	</div>
+	<div class="col-sm-4">
+		<div class="address">
+			<h5><b>Name : @Model.Name</b></h5>
+			<h5>Email : @Model.Email</h5>
+			<h5>@Model.Phone</h5>
+			
+		</div>
+	</div>
+	
+</div>

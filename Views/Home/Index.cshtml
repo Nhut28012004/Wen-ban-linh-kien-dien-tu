@@ -1,0 +1,137 @@
+﻿@model IEnumerable<ProductModel>
+@{
+	ViewData["Title"] = "Web bán hàng ASP.NET8";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<partial name="_SliderPartial" />
+<div class="col-sm-3">
+	<partial name="_SidebarPartial" />
+</div>
+<div class="col-sm-9 padding-right">
+	<div class="features_items">
+		<!--features_items-->
+		<h2 class="title text-center">Features Items</h2>
+		@foreach (var item in Model)
+
+		{
+
+
+			<div class="col-sm-4">
+				<div class="product-image-wrapper">
+					<div class="single-products">
+
+						<div class="productinfo text-center">
+						<a asp-action="Details" asp-controller="Product" asp-route-Id="@item.Id">
+							<img src="~/media/products/@item.Image" alt="@item.Name" width="100%" />
+								<h2>$@item.Price.ToString("#,##0 VND")</h2>
+							<p>@item.Name</p>
+                            <p>Danh mục :@item.Category.Name</p>
+							<p>Thương hiệu :@item.Brand.Name</p>
+						</a>
+							<!-- changed: include data-product_id and prevent default navigation so AJAX can run -->
+							@if (@item.Quantity == 0)
+							{
+								<button type="button" class="btn btn-default"><i class="fa fa-shopping-cart"></i>Hết hàng</button>
+							}
+							else
+							{
+								<button class="btn btn-default add-to-cart" data-product_id="@item.Id"><i class="fa fa-shopping-cart"></i>Thêm giỏ hàng</button>
+							}
+						</div>
+
+					</div>
+				</div>
+			</div>
+		}
+
+
+	</div><!--features_items-->
+
+</div>
+@section Scripts {
+	<script>
+
+		// Delegated handler (works for dynamically rendered items) and defensive logging
+  $(document).on('click', '.add-to-cart', function (e) {
+    e.preventDefault();
+    var Id = $(this).data('product_id');
+    console.log('Add to cart clicked, product id:', Id);
+	 
+    if (!Id) {
+      console.warn('No product id on button');
+      Swal.fire('Error','Product id missing','error');
+      return;
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: '@Url.Action("Add","Cart")',
+      data: { Id: Id },
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }, // indicates AJAX to server
+      success: function (result) {
+        console.log('Add to cart response:', result);
+        if (result && result.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Thêm giỏ hàng thành công.',
+            timer: 1500,
+            showConfirmButton: false
+          });
+          if (result.count !== undefined) $('#cart-count').text(result.count);
+        } else {
+          Swal.fire('Error', result?.message ?? 'Cannot add to cart', 'error');
+        }
+      },
+      error: function (xhr, status, err) {
+        console.error('AJAX error', status, err, xhr.responseText);
+        Swal.fire('Error', 'Ajax request failed', 'error');
+      }
+    });
+  });
+	</script>
+	<!---Add to Wishlish Script--->
+	<script>
+		$(document).ready(function () {
+			$('.add-btn-wishlist').click(function () {
+				var Id = $(this).data("product_id");
+
+				$.ajax({
+					type: "POST",
+					url: "@Url.Action("AddWishlist", "Home")",
+					data: { Id: Id },
+
+					success: function (result) {
+						if (result) {
+
+							Swal.fire("Thêm yêu thích sản phẩm thành công.");
+						}
+					}
+
+				});
+			});
+		});
+	</script>
+	<!---//Add to Wishlish Script--->
+	<!---Add to Wishlish Script--->
+	<script>
+		$(document).ready(function () {
+			$('.add-btn-compare').click(function () {
+				var Id = $(this).data("product_id");
+
+				$.ajax({
+					type: "POST",
+					url: "@Url.Action("AddCompare", "Home")",
+					data: { Id: Id }, 
+					success: function (result) {
+						if (result) {
+
+							Swal.fire("Thêm sao sánh thành công.");
+						}
+					}
+
+				});
+			});
+		});
+	</script>
+	<!---//Add to Wishlish Script--->
+}
